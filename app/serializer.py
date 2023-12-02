@@ -1,5 +1,6 @@
 from rest_framework import serializers
-from app.models import (User, Article,)
+from app.task import (create_user_with_validated_data,
+                      create_article_with_validated_data,)
 
 
 class UserSerializer(serializers.Serializer):
@@ -11,7 +12,7 @@ class UserSerializer(serializers.Serializer):
     last_name = serializers.CharField(max_length=200)
 
     def create(self, data):
-        return User.objects.create_user(**data)
+        return create_user_with_validated_data(data)
 
 
 class UserSerializerDetail(UserSerializer):
@@ -39,4 +40,4 @@ class ArticleSerializer(serializers.Serializer):
     detail = serializers.CharField(allow_null=True, allow_blank=True)
 
     def create(self, validated_data):
-        return Article.objects.create(**validated_data)
+        return create_article_with_validated_data(validated_data)

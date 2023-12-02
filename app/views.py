@@ -8,6 +8,8 @@ from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiExampl
 # from drf_spectacular.types import OpenApiTypes
 
 from app.models import (User, Article)
+from app.task import (get_all_users, get_one_user,
+                      get_all_articles, get_one_article)
 from app.serializer import (
     UserSerializer, UserSerializerDetail, ArticleSerializer, )
 
@@ -50,7 +52,7 @@ class UserView(APIView):
         ],
     )
     def get(self, request):
-        user = User.objects.all()
+        user = get_all_users()
         serializer = self.serializer_class(instance=user, many=True)
         return Response(data=serializer.data, status=status.HTTP_200_OK)
 
@@ -65,7 +67,7 @@ class UserViewDetail(APIView):
         responses={200: UserSerializerDetail},
     )
     def put(self, request, pk):
-        instance = User.objects.get(pk=pk)
+        instance = get_one_user(pk=pk)
         serializer = self.serializer_class(
             instance=instance, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
@@ -92,7 +94,7 @@ class UserViewDetail(APIView):
         ],
     )
     def get(self, request, pk):
-        user = User.objects.get(pk=pk)
+        user = get_one_user(pk=pk)
         serializer = self.serializer_class(user)
         return Response(data=serializer.data, status=status.HTTP_200_OK)
 
@@ -132,7 +134,7 @@ class ArticleView(APIView):
         ],
     )
     def get(self, request):
-        article = Article.objects.all()
+        article = get_all_articles()
         serializer = self.serializer_class(instance=article, many=True)
         return Response(data=serializer.data, status=status.HTTP_200_OK)
 
@@ -146,7 +148,7 @@ class ArticleViewDetailAndUpdate(APIView):
         responses={200: ArticleSerializer},
     )
     def put(self, request, pk):
-        article = Article.objects.get(pk=pk)
+        article = get_one_article(pk=pk)
         serializer = self.serializer_class(
             instance=article, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
@@ -173,6 +175,6 @@ class ArticleViewDetailAndUpdate(APIView):
         ],
     )
     def get(self, request, pk):
-        article = Article.objects.get(pk=pk)
+        article = get_one_article(pk=pk)
         serializer = self.serializer_class(instance=article)
         return Response(data=serializer.data, status=status.HTTP_200_OK)
