@@ -1,0 +1,95 @@
+version: '3.9'
+
+services:
+  app:
+    image: dj_celery:v0.0.1
+    build:
+      context: .
+    ports:
+      - 8000:8000
+    env_file:
+      - .env
+    environment:
+      - DEBUG=${DEBUG}
+      - SECRET_KEY=${SECRET_KEY}
+      - USERNAME=${USERNAME}
+      - PASSWORD=${PASSWORD}
+      - EMAIL=${EMAIL}
+      - FIRST_NAME=${FIRST_NAME}
+      - LAST_NAME=${LAST_NAME}
+      - DB_USER=${DB_USER}
+      - HOST=db
+      - DB_NAME=${DB_NAME}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - CELERY_BROKER_URL=amqp://guest:guest@rabbitmq:5672/
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+    depends_on:
+      - db
+  
+  worker:
+    build:
+      context: .
+    container_name: dj_worker
+    entrypoint: ["run_celery.sh"]
+    environment:
+      - DEBUG=${DEBUG}
+      - SECRET_KEY=${SECRET_KEY}
+      - USERNAME=${USERNAME}
+      - PASSWORD=${PASSWORD}
+      - EMAIL=${EMAIL}
+      - FIRST_NAME=${FIRST_NAME}
+      - LAST_NAME=${LAST_NAME}
+      - DB_USER=${DB_USER}
+      - HOST=db
+      - DB_NAME=${DB_NAME}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - CELERY_BROKER_URL=amqp://guest:guest@rabbitmq:5672//
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+    depends_on:
+      - app
+      - rabbitmq
+      - redis
+
+  db:
+    image: postgres:latest
+    container_name: postgres_db
+    restart: always
+    ports:
+      - 5432:5432
+    env_file:
+      - .env
+    environment:
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      - POSTGRES_DB=${DB_NAME}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  nginx:
+    container_name: nginx
+    image: nginx:latest
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - app
+    ports:
+      - "80:80"
+
+  redis:
+    container_name: redis
+    image: redis:latest
+    ports:
+      - 6379:6379
+
+  rabbitmq:
+    container_name: rabbitmq
+    image: rabbitmq:3-management
+    environment:
+      - RABBITMQ_DEFAULT_USER=guest
+      - RABBITMQ_DEFAULT_PASS=guest
+    ports:
+      - 5672:5672
+      - 8080:15672
+
+volumes:
+  pgdata:

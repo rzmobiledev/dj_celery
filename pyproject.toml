@@ -16,6 +16,8 @@ drf-spectacular = "^0.26.5"
 psycopg2-binary = "^2.9.9"
 celery = "^5.3.6"
 redis = "^5.0.1"
+whitenoise = "^6.6.0"
+gunicorn = "^21.2.0"
 
 
 [tool.poetry.group.test.dependencies]
